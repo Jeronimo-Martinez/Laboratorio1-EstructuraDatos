@@ -3,7 +3,7 @@ import verificaciones as ver
 
 if __name__ == '__main__':
 
-    #matriz.generar_matriz()
+    matriz.generar_matriz()
 
     input("presione enter para continuar...")
     #ejemplo quemado
