@@ -1,5 +1,10 @@
 ### Dueño repositorio:  Jerónimo Martinez Carabalí c.c 1017928617
 
+### Requerimientos y librerias :
+- python 3.14
+- numpy
+- pathlib (built-in en python)
+- itertools (built-in en python))
 
 ### Explicación archivos 
 
