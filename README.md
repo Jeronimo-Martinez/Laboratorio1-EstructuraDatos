@@ -14,6 +14,8 @@
 - ***obtener_dato(num_fila,num_columna,archivo="Matriz.txt)*** : retorna e imprime en consola el valor de la matriz en la posición [<num_fila>,<num_columna>].
 - ***modificar_dato(num_fila, num_columna, nuevo_valor, archivo="Matriz.txt")*** : modifica el valor de la matriz en la posición[<num_fila>,<num_columna>] , luego lo imprime en consola y lo retorna.
 
+**main.py** : Ejecuta un ejemplo quemado de la implementación.
+
  ### **Explicación estructura archivo** 
  
  - Matriz binaria de 100,000 x 100,000 (~10 GB) organizada con offsets fijos por fila en disco.
