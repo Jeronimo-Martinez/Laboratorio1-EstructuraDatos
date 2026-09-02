@@ -1,3 +1,6 @@
+### Dueño repositorio:  Jerónimo Martinez Carabalí c.c 1017928617
+
+
 ### Explicación archivos 
 
 **matriz.py** : código que genera y guarda la matriz en memoria.
