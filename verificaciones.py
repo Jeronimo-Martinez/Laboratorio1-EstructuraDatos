@@ -1,8 +1,4 @@
-
 import itertools
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
 
 # offset entre elementos de una fila = 1 caracter, no es necesario definir un offset formal ni usar separadores en archivo
 # el separador entre filas es un salto de linea (\n). offset entre filas = 100002 bytes, \n(el separador) ocupa 2 bytes en windows
@@ -109,7 +105,3 @@ def modificar_dato(num_fila, num_columna, nuevo_valor, archivo="Matriz.txt"):
         f.write(nuevo_valor.encode('utf-8'))
 
     print(f"Modificación exitosa. El valor ahora es '{nuevo_valor}'.\n")
-
-
-
-
