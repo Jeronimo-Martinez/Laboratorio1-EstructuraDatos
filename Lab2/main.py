@@ -1,42 +1,69 @@
 from arbol_merkle import MerkleTree
 import arbol_merkle as mk
 from rich import print
+from grafico_arbol import mostrar_arbol_matplotlib
 
 def main():
     transacciones = [
-        "Maria transfiere 50 dolares",
-        "Juan retira 100 dolares",
-        "Fabian transfiere 172 dolares",
-        "Tatiana recibe 50 dolares",
-        "Julian retira 20 dollares"
+        "Maria transfiere 50 dólares",
+        "Juan retira 100 dólares",
+        "Fabian transfiere 172 dólares",
+        "Tatiana recibe 50 dólares",
+        "Julian retira 20 dólares"
     ]
 
     arbol = MerkleTree(transacciones)
     nodo_raiz = arbol.get_raiz()
     arbol_rich = mk.convertir_a_rich(nodo_raiz)
 
+    print("Bloques a partir de los que se construye el arbol:\n")
+    for transaccion in transacciones:
+        print(transaccion)
     print("\n====== ÁRBOL DE MERKLE =======")
     print(arbol_rich)
+    mostrar_arbol_matplotlib(arbol.raiz)
+
+    print(f"\nRaiz del arbol: {nodo_raiz.hash_full}")
 
 
-    print(f"Raiz del arbol: {nodo_raiz.hash_full}")
+    print("\nSi se cambia un dato, también cambia el arbol y la raiz \n ej: dato 2 : Juan retira 100 dólares -> Juan retira 125 dólares")
+    transacciones_cambio = transacciones
+    transacciones_cambio[1] = "Juan retira 125 dólares"
+
+    arbol_cambio = MerkleTree(transacciones_cambio)
+    nodo_raiz_cambio = arbol_cambio.get_raiz()
+    arbol_rich_cambio = mk.convertir_a_rich(nodo_raiz)
+
+    print("\n Bloques a partir de los que se construye el arbol:\n")
+    for transaccion in transacciones_cambio:
+        print(transaccion)
+    print("\n====== ÁRBOL DE MERKLE =======")
+    print(arbol_rich_cambio)
+    mostrar_arbol_matplotlib(arbol_cambio.raiz)
+
+    print(f"\nRaiz del arbol con un dato cambiado: {nodo_raiz_cambio.hash_full}")
+    print(f"Raiz del arbol original: {nodo_raiz.hash_full}")
 
 
-    transaccion_prueba = "Tatiana recibe 50 dolares"
-    prueba = arbol.get_proof(transaccion_prueba)
+    print("\n=============================================")
+    print("prueba en el bloque 3 , arbol original")
+    raiz_esperada = nodo_raiz.hash_full
+    transaccion_prueba = "Fabian transfiere 172 dólares"
+    prueba = arbol.get_proof(2)
+    es_valida, raiz_obtenida = MerkleTree.verificar_prueba(transaccion_prueba, prueba, raiz_esperada)
 
-    print(f"Prueba de inclusion para {transaccion_prueba}")
-    for i, (pos, h) in enumerate(prueba):
-        print(f"Paso {i + 1}: Agregar hash a la {pos} -> {h[:10]}...")
+    print(f"\nVerificando '{transaccion_prueba}': \n")
+    print(f"[Raíz esperada: {raiz_esperada}")
+    print(f"Raíz obtenida:] {raiz_obtenida}")
+    print(f"\nResultado: {'EXITO - La transacción es valida' if es_valida else 'FALLO - El hash final no coincide'}\n")
 
-    es_valida = MerkleTree.verificar_prueba(transaccion_prueba, prueba, nodo_raiz.hash_full)
-    print(f"\nVerificando '{transaccion_prueba}':",
-          "EXITO - La transaccion es valida" if es_valida else "FALLO - El hash final no coincide")
 
-    dato_falso = "Tatiana recibe 150 dolares"
-    es_valida_falsa = MerkleTree.verificar_prueba(dato_falso, prueba, nodo_raiz.hash_full)
-    print(f"Verificando '{dato_falso}':",
-          "EXITO - La trasaccion es valida" if es_valida_falsa else "FALLO - El hash final no coincide")
+    dato_falso = "Fabian transfiere 2000 euros"
+    es_valida, raiz_obtenida = MerkleTree.verificar_prueba(dato_falso, prueba, raiz_esperada)
+    print(f"\nVerificando '{transaccion_prueba}': \n")
+    print(f"[Raíz esperada: {raiz_esperada}")
+    print(f"Raíz obtenida:] {raiz_obtenida}")
+    print(f"\nResultado: {'EXITO - La transacción es valida' if es_valida else 'FALLO - El hash final no coincide'}\n")
 
 if __name__ == "__main__":
     main()

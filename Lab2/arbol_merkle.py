@@ -8,13 +8,14 @@ class MerkleNode:
         self.value = hash_full[:5]
         self.left = left
         self.right = right
+        self.padre = None #es una referencia directa al nodo superior, necesaria para la prueba
 
 
 
 class MerkleTree:
     def __init__(self, transacciones):
         # se construye el árbol y se guarda la raíz
-        self.transacciones = transacciones
+        self.hojas =[]
         self.raiz = self._construir_arbol(transacciones)
 
     def _calcular_hash(self, texto: str):
@@ -29,6 +30,7 @@ class MerkleTree:
             h_full = self._calcular_hash(t)
             nodo = MerkleNode(h_full)
             nodos_actuales.append(nodo)
+            self.hojas.append(nodo)
 
         while len(nodos_actuales) > 1:
             # Si el nivel es impar, duplica el último nodo
@@ -46,6 +48,8 @@ class MerkleTree:
                 hash_padre = self._calcular_hash(izq.hash_full + der.hash_full)
                 nodo_padre = MerkleNode(hash_padre, left=izq, right=der)
 
+                izq.padre = nodo_padre
+                der.padre = nodo_padre
                 siguiente_nivel.append(nodo_padre)
                 i += 2
 
@@ -57,40 +61,25 @@ class MerkleTree:
         """Retorna el nodo raíz del árbol."""
         return self.raiz
 
-    def get_proof(self, transaccion):
+    def get_proof(self, indice:int):
         """Genera la prueba de inclusión para una transacción dada."""
-        try:
-            # Buscar el índice de la transacción
-            index = self.transacciones.index(transaccion)
-        except ValueError:
-            return None  # La transacción no está en el árbol
+        if indice < 0 or indice >= len(self.hojas):
+            return None
 
-        # Recreamos el proceso de subida nivel por nivel usando solo los hashes
-        hashes_actuales = [self._calcular_hash(t) for t in self.transacciones]
+        nodo_actual = self.hojas[indice]
         prueba = []
 
-        while len(hashes_actuales) > 1:
-            if len(hashes_actuales) % 2 != 0:
-                hashes_actuales.append(hashes_actuales[-1])
+        # Subir por el árbol hasta que no haya más padres (hasta la raiz)
+        while nodo_actual.padre is not None:
+            padre = nodo_actual.padre
 
-            #determinar posicion nodo actual , hijo izq o der
-            if index % 2 == 0:
-                posicion_hermano = "right"
-                hermano_idx = index + 1
+            # Determinar si es el hijo izquierdo o derecho para tomar al hermano contrario
+            if padre.left == nodo_actual:
+                prueba.append(("right", padre.right.hash_full))
             else:
-                posicion_hermano = "left"
-                hermano_idx = index - 1
+                prueba.append(("left", padre.left.hash_full))
 
-            # Guardar la posición y el hash del hermano necesario
-            prueba.append((posicion_hermano, hashes_actuales[hermano_idx]))
-
-            siguiente_nivel = []
-            for i in range(0, len(hashes_actuales), 2):
-                hash_padre = self._calcular_hash(hashes_actuales[i] + hashes_actuales[i + 1])
-                siguiente_nivel.append(hash_padre)
-
-            hashes_actuales = siguiente_nivel
-            index = index // 2  #indice del nuevo nodo padre
+            nodo_actual = padre
 
         return prueba
 
@@ -100,22 +89,21 @@ class MerkleTree:
         if prueba is None:
             return False
 
-        # Hacemos hash de la transacción original
+        # hash de la transacción a verificar
         hash_actual = hashlib.sha256(transaccion.encode()).hexdigest()
 
         # Reconstruir el camino hacia la raíz
         for posicion, hash_hermano in prueba:
             if posicion == "right":
                 # Si el hermano se va a la derecha, se toma el nodo izq
-                texto_a_hashear = hash_actual + hash_hermano
+                hash_actual = hashlib.sha256((hash_actual + hash_hermano).encode()).hexdigest()
             else:
                 # Si el hermano va a la izq, se toma el nodo der
-                texto_a_hashear = hash_hermano + hash_actual
+                hash_actual = hashlib.sha256((hash_hermano + hash_actual).encode()).hexdigest()
 
-            hash_actual = hashlib.sha256(texto_a_hashear.encode()).hexdigest()
-
-        # Compar el hash resultante con la raíz pública del árbol
-        return hash_actual == hash_raiz_esperado
+        # Comparar el hash resultante con la raíz pública del árbol y retornar raiz obtenida
+        es_valido = (hash_actual == hash_raiz_esperado)
+        return es_valido, hash_actual
 
 
 def convertir_a_rich(nodo, rama_rich=None):
