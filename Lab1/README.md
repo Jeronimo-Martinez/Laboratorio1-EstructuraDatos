@@ -1,4 +1,4 @@
-### Dueño repositorio:  Jerónimo Martinez Carabalí c.c 1017928617
+## Laboratorio 1 
 
 ### Requerimientos y librerias :
 - python 3.14
